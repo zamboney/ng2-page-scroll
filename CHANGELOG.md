@@ -1,3 +1,37 @@
+## 3.0.0 (2016-09-05)
+
+Breaking Change:
+- Only angular version 2 rc.5 and older supported
+- defaultEasingFunction interface has been removed in favour of defaultEasingLogic abstract class to be extended/overridden for defining custom easing methods
+
+Feature:
+
+- automatically stop the scroll timer task when an end of the scroll-region has been reached 
+
+Fix:
+
+- Non working event emitter and directive scrolls not working properly on consecutive clicks 
+
+Other:
+
+- Added ngModule conform export
+- New demo application started with angular-cli
+
+## 2.0.0 (2016-09-03)
+
+Breaking Change:
+
+- New `PageScrollService` needs to be added to the bootstrap() calls provider array.
+
+Feature:
+
+- Service implementation to trigger scroll animations from other places than an element click
+- Set the scroll container to scroll "inline" (e.g. a div with fixed height and vertical scroll bar)
+
+Other:
+
+- Reorganized Readme
+
 ## 1.2.1 (2016-07-23)
 
 Fix:
