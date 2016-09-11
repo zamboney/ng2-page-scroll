@@ -1,19 +1,17 @@
 import {Directive, Input, Output, EventEmitter, OnDestroy, Inject} from '@angular/core';
 import {Router, NavigationEnd, NavigationError, NavigationCancel} from '@angular/router';
 import {DOCUMENT} from '@angular/platform-browser';
-
 import {Subscription} from 'rxjs/Subscription';
-
+import {IEasingFunction} from './ng2-page-scroll-config';
+import {PageScrollManager} from './ng2-page-scroll-manager';
 import {PageScrollService} from './ng2-page-scroll.service';
-import {PageScrollInstance} from './ng2-page-scroll-instance';
-import {PageScrollUtilService} from './ng2-page-scroll-util.service';
-import {EasingLogic} from './ng2-page-scroll-config';
 
 @Directive({
     selector: '[pageScroll]',
     host: { // tslint:disable-line:use-host-property-decorator
-        '(click)': 'handleClick($event)',
-    }
+      '(click)': 'handleClick($event)',
+    },
+    providers: [PageScrollService]
 })
 export class PageScroll implements OnDestroy {
 
@@ -30,48 +28,38 @@ export class PageScroll implements OnDestroy {
     public pageScrollDuration: number = null;
 
     @Input()
-    public pageScrollEasing: EasingLogic = null;
+    public pageScrollEasing: IEasingFunction = null;
 
     @Input()
     public pageScrollInterruptible: boolean;
 
     @Input()
-    public pageScroll: string = null;
+    public pageScrollEnable: boolean = true;
 
     @Output()
     pageScrollFinish: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-    private pageScrollInstance: PageScrollInstance;
+    private body: HTMLBodyElement;
+    private scrollTopSources: any[];
 
-    constructor(private pageScrollService: PageScrollService, private router: Router, @Inject(DOCUMENT) private document: Document) {
+    private interruptListenersAttached: boolean = false;
+
+    constructor(private router: Router, @Inject(DOCUMENT) private document: any, private pageScrollService: PageScrollService) {
+        this.body = document.body;
+        this.scrollTopSources = [this.document.documentElement, this.body, this.document.body.parentNode];
     }
 
     ngOnDestroy(): any {
-        if (this.pageScrollInstance) {
-            this.pageScrollService.stop(this.pageScrollInstance);
+        if (this.interruptListenersAttached) {
+            PageScrollManager.detachInterfereListeners(this.body);
         }
         return undefined;
     }
 
-    private generatePageScrollInstance(): PageScrollInstance {
-        if (PageScrollUtilService.isUndefinedOrNull(this.pageScrollInstance)) {
-            this.pageScrollInstance = PageScrollInstance.advancedInstance(
-                this.document,
-                this.href,
-                null,
-                this.pageScroll,
-                this.pageScrollOffset,
-                this.pageScrollInterruptible,
-                this.pageScrollEasing,
-                this.pageScrollDuration,
-                this.pageScrollFinish
-            );
-        }
-        return this.pageScrollInstance;
-    }
-
     private handleClick(clickEvent: Event): boolean { // tslint:disable-line:no-unused-variable
-
+        if (!this.pageScrollEnable) {
+            return false;
+        }
         if (this.routerLink) {
             // We need to navigate their first.
             // Navigation is handled by the routerLink directive
@@ -80,13 +68,23 @@ export class PageScroll implements OnDestroy {
             let subscription: Subscription = <Subscription>this.router.events.subscribe((routerEvent) => {
                 if (routerEvent instanceof NavigationEnd) {
                     subscription.unsubscribe();
-                    this.pageScrollService.start(this.generatePageScrollInstance());
+                    this.pageScrollService.scrollView(this.href,
+                        this.scrollTopSources,
+                        this.pageScrollOffset,
+                        this.pageScrollInterruptible,
+                        this.pageScrollEasing,
+                        this.pageScrollDuration);
                 } else if (routerEvent instanceof NavigationError || routerEvent instanceof NavigationCancel) {
                     subscription.unsubscribe();
                 }
             });
         } else {
-            this.pageScrollService.start(this.generatePageScrollInstance());
+            this.pageScrollService.scrollView(this.href,
+                this.scrollTopSources,
+                this.pageScrollOffset,
+                this.pageScrollInterruptible,
+                this.pageScrollEasing,
+                this.pageScrollDuration);
         }
         return false; // to preventDefault()
     }

@@ -1,4 +1,4 @@
-export abstract class EasingLogic {
+export interface IEasingFunction {
     /**
      * Examples may be found at https://github.com/gdsmith/jquery.easing/blob/master/jquery.easing.js
      * or http://gizma.com/easing/
@@ -7,12 +7,8 @@ export abstract class EasingLogic {
      * @param c change In value
      * @param d duration
      */
-    public abstract ease(t: number, b: number, c: number, d: number): number;
+    (t: number, b: number, c: number, d: number): number;
 }
-
-export declare type PageScrollTarget = HTMLElement | string;
-
-export declare type PageScrollingViews = HTMLElement | Document | HTMLBodyElement | Node;
 
 export class PageScrollConfig {
 
@@ -23,8 +19,6 @@ export class PageScrollConfig {
      * @private
      */
     public static _interval: number = 10;
-
-    public static _defaultNamespace = 'default';
 
     /**
      * The duration how long a scrollTo animation should last by default.
@@ -41,7 +35,7 @@ export class PageScrollConfig {
     public static defaultScrollOffset: number = 0;
 
     /**
-     * The events that are listened to on the body to decide whether a scroll animation has been interfered/interrupted by the user
+     * The events that are listened to on the body to decide whether a scroll animation has been interfered by the user
      * @type {string[]}
      * @private
      */
@@ -62,20 +56,17 @@ export class PageScrollConfig {
      */
     public static defaultInterruptible: boolean = true;
 
-    private static _easingLogic: EasingLogic = {
-        ease: (t: number, b: number, c: number, d: number): number => {
-            // Linear easing
-            return c * t / d + b;
-        }
+    private static _easingFunction: IEasingFunction = (t: number, b: number, c: number, d: number): number => {
+        // Linear easing
+        return c * t / d + b;
     };
 
     // Getter and setter to avoid auto completion to suggest calling the method
-    public static get defaultEasingLogic(): EasingLogic {
-        return PageScrollConfig._easingLogic;
+    public static get defaultEasingFunction(): IEasingFunction {
+        return PageScrollConfig._easingFunction;
     }
 
-    public static set defaultEasingLogic(easingLogic: EasingLogic) {
-        PageScrollConfig._easingLogic = easingLogic;
+    public static set defaultEasingFunction(easingFunction: IEasingFunction) {
+        PageScrollConfig._easingFunction = easingFunction;
     }
-
 }

@@ -9,14 +9,13 @@
     "removeComments": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noImplicitReturns": true,
     "listFiles": false,
     "noLib": false
   },
   "include": [
     "./typings/index.d.ts",
-    "./ng2-page-scroll.ts",
-    "./test/e2e/*.ts"
+    "./ng2-page-scroll.ts"
   ]
 }
